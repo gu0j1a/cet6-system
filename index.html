@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#2b4f74" />
+<meta name="description" content="六级学习系统：词汇、听力、阅读、翻译、写作、水平自测与八周备考计划，离线可用" />
+<title>CET-6 学习系统</title>
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="icons/icon-180.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="六级训练" />
+<link rel="icon" type="image/png" href="icons/icon-192.png" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">6</div>
+      <div class="brand-text">
+        <div class="brand-name">六级学习系统</div>
+        <div class="brand-sub">CET-6 Trainer</div>
+      </div>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="side-foot">
+      <div class="side-streak">
+        <span class="dot"></span><span id="sideStreak">连续 0 天</span>
+      </div>
+      <div class="side-foot-sub">每天 40 分钟，六周见效果</div>
+    </div>
+  </aside>
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="page-kicker" id="pageKicker">今日概览</div>
+        <h1 class="page-title" id="pageTitle">开始今天的学习</h1>
+      </div>
+      <div class="topbar-right">
+        <div class="chip" id="dateChip"></div>
+        <div class="chip chip-accent" id="xpChip">0 XP</div>
+      </div>
+    </header>
+    <div id="view" class="view"></div>
+    <footer class="foot">学习记录保存在本机浏览器（localStorage），清除站点数据会一并清空。</footer>
+  </main>
+</div>
+<div class="toast" id="toast"></div>
+<script src="data-vocab.js"></script>
+<script src="data-content.js"></script>
+<script src="data-exam.js"></script>
+<script src="data-plan.js"></script>
+<script src="data-memory.js"></script>
+<script src="app.js"></script>
+<script>
+  // Service Worker：https 或 localhost 下注册，实现离线安装 + 后台通知
+  if ("serviceWorker" in navigator &&
+      (location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1")) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("sw.js").then(function (reg) {
+        // 后台定时同步（需已安装且浏览器支持），让关闭应用后也能检查到期词
+        if ("periodicSync" in reg) {
+          navigator.permissions && navigator.permissions.query({ name: "periodic-background-sync" })
+            .then(function (st) {
+              if (st.state === "granted") {
+                return reg.periodicSync.register("cet6-daily-check", { minInterval: 12 * 60 * 60 * 1000 });
+              }
+            }).catch(function () { });
+        }
+      }).catch(function () { });
+    });
+  }
+</script>
+</body>
+</html>
